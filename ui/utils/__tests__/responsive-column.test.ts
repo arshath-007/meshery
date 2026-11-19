@@ -76,6 +76,8 @@ describe('updateVisibleColumns', () => {
           [null, 'xs'],
           [123, 's'],
           ['invalid', null],
+          ['blank', ''],
+          ['whitespace', '   '],
           ['valid', 'xs'],
         ],
         800,
@@ -83,7 +85,7 @@ describe('updateVisibleColumns', () => {
     ).toEqual({ valid: true });
   });
 
-  it.each([NaN, Infinity, -Infinity, '800', null, undefined])(
+  it.each([NaN, Infinity, -Infinity, -5, '800', null, undefined])(
     'uses zero as the fallback for invalid width: %s',
     (width) => {
       expect(updateVisibleColumns([['small', 's']], width)).toEqual({
