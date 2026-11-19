@@ -13,7 +13,7 @@ export const updateVisibleColumns = (colViews, width) => {
     xl: 1140,
   };
 
-  const safeWidth = typeof width === 'number' && Number.isFinite(width) ? width : 0;
+  const safeWidth = typeof width === 'number' && Number.isFinite(width) ? Math.max(0, width) : 0;
 
   const showCols = {};
 
@@ -31,7 +31,8 @@ export const updateVisibleColumns = (colViews, width) => {
     if (
       typeof columnName !== 'string' ||
       columnName.trim() === '' ||
-      typeof screenSize !== 'string'
+      typeof screenSize !== 'string' ||
+      screenSize.trim() === ''
     ) {
       return;
     }
