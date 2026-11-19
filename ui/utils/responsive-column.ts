@@ -1,19 +1,9 @@
 /**
  * updateVisibleColumns Function
  *
- * Purpose:
- * This function calculates which columns should be visible based on the provided screen sizes and the current screen width.
- *
- * Input:
- * @param {Array} colViews - An array of column views, where each element is an array containing the column name and the screen size till which it should be visible.
- * @param {number} width - The current screen width.
- *
- * Output:
- * @returns {Object} - An object representing column visibility, where keys are column names, and values are booleans indicating visibility.
+ * Calculates column visibility based on screen size and current screen width.
  */
-
 export const updateVisibleColumns = (colViews, width) => {
-  // Create a mapping of screen sizes to their minimum widths
   const screenSizeMap = {
     na: 0,
     xs: 585,
@@ -23,26 +13,37 @@ export const updateVisibleColumns = (colViews, width) => {
     xl: 1140,
   };
 
-  // Determine the minimum width for visibility based on the provided screen size
-  const getMinWidthForScreenSize = (screenSize) => {
-    return screenSizeMap[screenSize] || 0;
-  };
+  const safeWidth = typeof width === 'number' && Number.isFinite(width) ? width : 0;
 
-  // Initialize showCols as an empty object
   const showCols = {};
 
-  colViews.forEach((col) => {
-    const [columnName, screenSize] = col;
-    const minScreenWidth = getMinWidthForScreenSize(screenSize);
+  if (!Array.isArray(colViews)) {
+    return showCols;
+  }
 
-    // Determine if the column should be visible based on screen width and rules
+  colViews.forEach((col) => {
+    if (!Array.isArray(col) || col.length !== 2) {
+      return;
+    }
+
+    const [columnName, screenSize] = col;
+
+    if (
+      typeof columnName !== 'string' ||
+      columnName.trim() === '' ||
+      typeof screenSize !== 'string'
+    ) {
+      return;
+    }
+
+    const minScreenWidth = screenSizeMap[screenSize] || 0;
+
     if (screenSize === 'na') {
-      showCols[columnName] = false; // "na" columns are not visible in any screen size
+      showCols[columnName] = false;
     } else if (screenSize === 'xs') {
-      showCols[columnName] = true; // "xs" columns are visible in all screen sizes
+      showCols[columnName] = true;
     } else {
-      // For other screen sizes, check if the screen width is greater than or equal to the minimum width
-      showCols[columnName] = width >= minScreenWidth;
+      showCols[columnName] = safeWidth >= minScreenWidth;
     }
   });
 
@@ -50,7 +51,15 @@ export const updateVisibleColumns = (colViews, width) => {
 };
 
 export const getResponsiveColumnVisibility = (columnNames, colViews, width) => {
+  if (!Array.isArray(columnNames)) {
+    return {};
+  }
+
   const showCols = updateVisibleColumns(colViews, width);
 
-  return Object.fromEntries(columnNames.map((columnName) => [columnName, showCols[columnName]]));
+  return Object.fromEntries(
+    columnNames
+      .filter((columnName) => typeof columnName === 'string' && columnName.trim() !== '')
+      .map((columnName) => [columnName, showCols[columnName]]),
+  );
 };
