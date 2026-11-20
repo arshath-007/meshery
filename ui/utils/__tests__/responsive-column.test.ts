@@ -96,6 +96,12 @@ describe('updateVisibleColumns', () => {
       });
     },
   );
+
+  it('does not treat inherited object properties as breakpoints', () => {
+    expect(updateVisibleColumns([['constructor', 'toString']], 800)).toEqual({
+      constructor: true,
+    });
+  });
 });
 
 describe('getResponsiveColumnVisibility', () => {
@@ -142,10 +148,14 @@ describe('getResponsiveColumnVisibility', () => {
     ).toEqual({ name: true, hidden: false });
   });
 
-  it('handles invalid colViews safely', () => {
-    expect(getResponsiveColumnVisibility(['name', 'size'], null, 800)).toEqual({
-      name: undefined,
-      size: undefined,
-    });
+  it('returns an empty object for invalid colViews', () => {
+    expect(getResponsiveColumnVisibility(['name', 'size'], null, 800)).toEqual({});
+    expect(getResponsiveColumnVisibility(['name'], undefined, 800)).toEqual({});
+  });
+
+  it('preserves prototype-named column keys as own properties', () => {
+    const result = getResponsiveColumnVisibility(['__proto__'], [['__proto__', 'xs']], 800);
+    expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).toBe(true);
+    expect(result.__proto__).toBe(true);
   });
 });

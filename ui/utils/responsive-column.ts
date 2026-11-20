@@ -3,8 +3,14 @@
  *
  * Calculates column visibility based on screen size and current screen width.
  */
-export const updateVisibleColumns = (colViews, width) => {
-  const screenSizeMap = {
+export const updateVisibleColumns = (colViews?: unknown, width?: number | unknown) => {
+  if (!Array.isArray(colViews)) {
+    return {};
+  }
+
+  const safeWidth = typeof width === 'number' && Number.isFinite(width) ? Math.max(0, width) : 0;
+
+  const screenSizeMap: Record<string, number> = {
     na: 0,
     xs: 585,
     s: 690,
@@ -13,13 +19,7 @@ export const updateVisibleColumns = (colViews, width) => {
     xl: 1140,
   };
 
-  const safeWidth = typeof width === 'number' && Number.isFinite(width) ? Math.max(0, width) : 0;
-
-  const showCols = {};
-
-  if (!Array.isArray(colViews)) {
-    return showCols;
-  }
+  const showCols: Record<string, boolean> = Object.create(null);
 
   colViews.forEach((col) => {
     if (!Array.isArray(col) || col.length !== 2) {
@@ -37,7 +37,9 @@ export const updateVisibleColumns = (colViews, width) => {
       return;
     }
 
-    const minScreenWidth = screenSizeMap[screenSize] || 0;
+    const minScreenWidth = Object.prototype.hasOwnProperty.call(screenSizeMap, screenSize)
+      ? screenSizeMap[screenSize]
+      : 0;
 
     if (screenSize === 'na') {
       showCols[columnName] = false;
@@ -51,8 +53,12 @@ export const updateVisibleColumns = (colViews, width) => {
   return showCols;
 };
 
-export const getResponsiveColumnVisibility = (columnNames, colViews, width) => {
-  if (!Array.isArray(columnNames)) {
+export const getResponsiveColumnVisibility = (
+  columnNames?: unknown,
+  colViews?: unknown,
+  width?: number | unknown,
+) => {
+  if (!Array.isArray(columnNames) || !Array.isArray(colViews)) {
     return {};
   }
 
@@ -60,7 +66,10 @@ export const getResponsiveColumnVisibility = (columnNames, colViews, width) => {
 
   return Object.fromEntries(
     columnNames
-      .filter((columnName) => typeof columnName === 'string' && columnName.trim() !== '')
+      .filter(
+        (columnName): columnName is string =>
+          typeof columnName === 'string' && columnName.trim() !== '',
+      )
       .map((columnName) => [columnName, showCols[columnName]]),
   );
 };
